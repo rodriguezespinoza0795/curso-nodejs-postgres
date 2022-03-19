@@ -1,7 +1,9 @@
 const faker = require('faker');
 const boom = require('@hapi/boom');
+const { Op } = require('sequelize')
 
 const { models } = require('../libs/sequelize');
+const sequelize = require('../libs/sequelize');
 
 class ProductsService {
 
@@ -29,13 +31,21 @@ class ProductsService {
   }
 
   async find(query) {
+    const { limit, offset, search } = query;
     const options = {
       include: ['category'],
+      where: {}
     }
-    const { limit, offset } = query;
+
     if (limit && offset) {
       options.limit = parseInt(limit, 0);
       options.offset = parseInt(offset, 0)
+    }
+
+    if (search) {
+      options.where['$category.name$'] = {
+        [Op.substring]: search
+      }
     }
     const products = await models.Product.findAll(options);
     return products;
