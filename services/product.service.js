@@ -3,7 +3,6 @@ const boom = require('@hapi/boom');
 const { Op } = require('sequelize')
 
 const { models } = require('../libs/sequelize');
-const sequelize = require('../libs/sequelize');
 
 class ProductsService {
 
@@ -52,13 +51,9 @@ class ProductsService {
   }
 
   async findOne(id) {
-    const product = this.products.find(item => item.id === id);
-    if (!product) {
-      throw boom.notFound('product not found');
-    }
-    if (product.isBlock) {
-      throw boom.conflict('product is block');
-    }
+    const product = await models.Product.findByPk(id, {
+      include: ['category']
+    });
     return product;
   }
 
